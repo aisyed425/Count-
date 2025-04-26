@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Count ⬇️</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 8px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .event {
+      margin-top: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: inline-block;
+      width: 300px;
+      text-align: center;
+      position: relative;
+      transition: background-color 1s ease; /* Enables fade-out */
+    }
+
+    .countdown {
+      font-size: 24px;
+      margin-top: 30px;
+    }
+
+    .red-background {
+      background-color: red !important;
+      color: white;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 16px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .remove-btn:hover {
+      background-color: #ff1a1a;
+    }
+  </style>a
+</head>
+<body>
+
+  <h1>Count ⬇️</h1>
+  <button onclick="addEvent()">+ Add Event</button>
+
+  <div id="eventContainer"></div>
+
+  <script>
+    let eventCount = 0;
+    let countdownIntervals = [];
+
+    function addEvent() {
+  eventCount++;
+  const eventId = `event${eventCount}`;
+  const eventHtml = `
+    <div class="event" id="${eventId}">
+      <button class="remove-btn" onclick="removeEvent('${eventId}')">X</button>
+      <input type="text" id="eventName${eventCount}" placeholder="Event Name" 
+        style="font-size: 20px; font-weight: bold; border: none; border-bottom: 2px solid #ccc; width: 80%; text-align: center;" />
+      <input type="date" id="eventDate${eventCount}" />
+      <input type="time" id="eventTime${eventCount}" />
+      <button onclick="startCountdown(${eventCount})">Start Countdown</button>
+      <div id="countdown${eventCount}" class="countdown hidden"></div>
+    </div>
+  `;
+  document.getElementById('eventContainer').insertAdjacentHTML('beforeend', eventHtml);
+
+}
+
+
+    function removeEvent(eventId) {
+      const eventElement = document.getElementById(eventId);
+      eventElement.remove();
+      const idNum = eventId.replace('event', '');
+      clearInterval(countdownIntervals[idNum]);
+    }
+
+    function startCountdown(eventId) {
+      const name = document.getElementById(`eventName${eventId}`).value.trim();
+      const date = document.getElementById(`eventDate${eventId}`).value;
+      const time = document.getElementById(`eventTime${eventId}`).value;
+
+      if (!name || !date || !time) {
+        alert("Please enter all fields.");
+        return;
+      }
+
+      if (countdownIntervals[eventId]) {
+        clearInterval(countdownIntervals[eventId]);
+      }
+
+      const eventDateTime = new Date(`${date}T${time}:00`);
+      document.getElementById(`countdown${eventId}`).classList.remove('hidden');
+      document.getElementById(`countdown${eventId}`).innerHTML = `Countdown to ${name}`;
+
+      function updateCountdown() {
+        const now = new Date();
+        const diff = eventDateTime - now;
+
+        if (diff <= 0) {
+          clearInterval(countdownIntervals[eventId]);
+          document.getElementById(`countdown${eventId}`).innerHTML = "🎉 The event has started!";
+
+          const eventElement = document.getElementById(`event${eventId}`);
+          eventElement.classList.add('red-background');
+
+          setTimeout(() => {
+            eventElement.classList.remove('red-background');
+          }, 5000);
+
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById(`countdown${eventId}`).innerHTML =
+          `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      updateCountdown();
+      countdownIntervals[eventId] = setInterval(updateCountdown, 1000);
+    }
+  </script>
+
+</body>
+</html>
